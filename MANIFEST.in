@@ -1,0 +1,5 @@
+include LICENSE
+include README.md
+recursive-include CubicGalileonEmu/data *
+recursive-include CubicGalileonEmu/model *
+recursive-exclude * __pycache__

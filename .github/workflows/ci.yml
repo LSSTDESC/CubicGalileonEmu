@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']  # scipy<=1.10.1 has no wheels for 3.12+
+    steps:
+    - uses: actions/checkout@v5
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: pip
+        cache-dependency-path: pyproject.toml
+
+    - name: Install package
+      run: |
+        python -m pip install --upgrade pip
+        pip install '.[test]'
+
+    # Run from outside the checkout so the *installed* package (and its bundled
+    # data/models) is what gets imported, not the source tree.
+    - name: Run tests (incl. README examples)
+      working-directory: ${{ runner.temp }}
+      run: pytest -v -p no:cacheprovider ${{ github.workspace }}/tests
+
+  build:
+    name: Build wheel
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Build sdist and wheel
+      run: |
+        python -m pip install --upgrade pip build
+        python -m build
+
+    - name: Check bundled models and data
+      run: |
+        python - <<'EOF'
+        import glob, zipfile
+        names = zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist()
+        n_models = sum(n.startswith('CubicGalileonEmu/model/') and n.endswith('.pkl') for n in names)
+        data = sorted(n for n in names if n.startswith('CubicGalileonEmu/data/'))
+        print('models:', n_models, 'data:', data)
+        assert n_models == 49, n_models
+        assert len(data) == 3, data
+        EOF
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+  notebook:
+    name: Execute example notebook
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: pip
+        cache-dependency-path: pyproject.toml
+
+    - name: Install package with example extras
+      run: |
+        python -m pip install --upgrade pip
+        pip install '.[examples]'
+
+    - name: Execute notebook
+      working-directory: examples
+      run: |
+        jupyter nbconvert --to notebook --execute \
+          --ExecutePreprocessor.timeout=1800 \
+          --output executed_demo.ipynb CubicGalileonEmu_demo.ipynb
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: executed-notebook
+        path: examples/executed_demo.ipynb
