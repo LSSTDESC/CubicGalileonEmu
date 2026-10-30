@@ -1,6 +1,7 @@
 # CubicGalileonEmu
 
 [![CI](https://github.com/LSSTDESC/CubicGalileonEmu/actions/workflows/ci.yml/badge.svg)](https://github.com/LSSTDESC/CubicGalileonEmu/actions/workflows/ci.yml)
+[![DOI](https://zenodo.org/badge/1439267920.svg)](https://doi.org/10.5281/zenodo.23792334)
 
 > Gaussian-process emulator for the matter power spectrum boost factor $B(k, z)$ in the cubic Galileon modified-gravity model.
 
