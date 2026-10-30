@@ -14,7 +14,7 @@ The pre-trained models ship with the package; no training is required.
 
 ## Installation
 
-Requires Python 3.8–3.11 (the `scipy<=1.10.1` pin has no wheels for 3.12+).
+Requires Python 3.10 or 3.11 (the `scipy<=1.10.1` pin has no wheels for 3.12+).
 
 ```sh
 git clone https://github.com/LSSTDESC/CubicGalileonEmu.git
@@ -73,21 +73,20 @@ print(Bk_mean.shape)             # (8, 768)
 
 ## Accuracy
 
-Comparison with held-out Hi-COLA simulations, including redshifts that fall between training
-snapshots (left: $z = 0.2$; right: worst-case fractional error over $k < 1.2\,h/$Mpc for every
-validation cosmology and redshift). The "edge" set deliberately samples the boundary of the
-training box.
+Comparison with held-out Hi-COLA simulations at $z = 0.2$, a redshift that falls between two
+training snapshots, so it also tests the redshift interpolation. The lower panel shows the
+fractional error; the shaded bands mark 1% and 2%.
 
 <p align="center">
-  <img src="docs/images/validation_z0p2.png" width="48%" alt="Emulated vs simulated B(k) at z = 0.2">
-  <img src="docs/images/error_vs_z.png" width="48%" alt="Maximum fractional emulation error vs redshift">
+  <img src="docs/images/validation_z0p2.png" width="70%" alt="Emulated vs simulated B(k) at z = 0.2">
 </p>
 
 ## Example notebook
 
 [`examples/CubicGalileonEmu_demo.ipynb`](examples/CubicGalileonEmu_demo.ipynb) walks through
 emulation, validation against the held-out simulations in `examples/data/`, sensitivity to each
-parameter, and the emulator uncertainty across parameter space. It produces the figures above.
+parameter, and the emulator uncertainty across parameter space. It produces the figures above,
+plus an error summary across all validation redshifts.
 
 ```sh
 pip install '.[examples]'
@@ -102,7 +101,7 @@ pytest tests
 ```
 
 The tests also execute the Python examples in this README. CI (GitHub Actions) runs them on
-Python 3.9–3.11, builds the wheel and checks that all models and data are bundled, and executes
+Python 3.10 and 3.11, builds the wheel and checks that all models and data are bundled, and executes
 the example notebook.
 
 ## License
